@@ -1,5 +1,6 @@
-// 初始化：從 localStorage 讀取狀態，否則設為空閒
+const TOTAL_MINUTES = 5;
 const machines = ['m1', 'm2', 'm3'];
+let intervals = {}; // 儲存計時器，避免重複執行
 
 function init() {
     machines.forEach(id => {
@@ -7,59 +8,82 @@ function init() {
         if (endTime) {
             const remaining = Math.floor((parseInt(endTime) - Date.now()) / 1000);
             if (remaining > 0) {
-                updateToInUse(id, remaining, parseInt(endTime));
+                runTimer(id, parseInt(endTime));
             } else {
-                updateToFinished(id);
+                renderFinished(id);
             }
+        } else {
+            renderAvailable(id);
         }
     });
     updateCounts();
 }
 
-function startMachine(id, minutes) {
-    const duration = minutes * 60; // 轉為秒
-    const endTime = Date.now() + duration * 1000;
-    
+function startMachine(id) {
+    const endTime = Date.now() + (TOTAL_MINUTES * 60 * 1000);
     localStorage.setItem(`laundry_end_${id}`, endTime);
-    updateToInUse(id, duration, endTime);
+    runTimer(id, endTime);
     updateCounts();
 }
 
-function updateToInUse(id, secondsLeft, endTime) {
+function runTimer(id, endTime) {
+    if (intervals[id]) clearInterval(intervals[id]);
+
     const card = document.getElementById(id);
     card.className = 'card in-use';
-    card.querySelector('.badge').innerText = '使用中';
     
-    const content = card.querySelector('.card-content');
-    content.innerHTML = `
-        <div class="progress-bg"><div id="bar-${id}" class="progress-fill"></div></div>
-        <p>剩餘時間：<span id="time-${id}">--</span> 分鐘</p>
-    `;
-
-    // 啟動定時器
-    const timerInterval = setInterval(() => {
+    // 每秒更新一次介面
+    const updateUI = () => {
         const now = Date.now();
         const left = Math.floor((endTime - now) / 1000);
 
         if (left <= 0) {
-            clearInterval(timerInterval);
-            updateToFinished(id);
+            clearInterval(intervals[id]);
+            localStorage.setItem(`laundry_end_${id}`, "finished"); // 標記為完成
+            renderFinished(id);
             updateCounts();
-        } else {
-            const mins = Math.ceil(left / 60);
-            document.getElementById(`time-${id}`).innerText = mins;
-            // 模擬進度條（40分鐘固定比例，這裡簡化處理）
-            const percent = Math.max(0, 100 - (left / (40 * 60)) * 100);
-            document.getElementById(`bar-${id}`).style.width = percent + '%';
+            return;
         }
-    }, 1000);
+
+        const mins = Math.floor(left / 60);
+        const secs = left % 60;
+        const percent = ((TOTAL_MINUTES * 60 - left) / (TOTAL_MINUTES * 60)) * 100;
+
+        card.innerHTML = `
+            <div class="card-header">
+                <h3>洗衣機 ${id.toUpperCase()}</h3>
+                <span class="badge">使用中</span>
+            </div>
+            <div class="progress-bg"><div class="progress-fill" style="width: ${percent}%"></div></div>
+            <p>剩餘時間：<strong>${mins} 分 ${secs} 秒</strong></p>
+        `;
+    };
+
+    updateUI();
+    intervals[id] = setInterval(updateUI, 1000);
 }
 
-function updateToFinished(id) {
+function renderAvailable(id) {
+    const card = document.getElementById(id);
+    card.className = 'card available';
+    card.innerHTML = `
+        <div class="card-header">
+            <h3>洗衣機 ${id.toUpperCase()}</h3>
+            <span class="badge">空閒</span>
+        </div>
+        <p>目前設備空閒中。</p>
+        <button class="btn btn-primary" onclick="startMachine('${id}')">掃碼啟動 (5分鐘)</button>
+    `;
+}
+
+function renderFinished(id) {
     const card = document.getElementById(id);
     card.className = 'card finished';
-    card.querySelector('.badge').innerText = '請取衣';
-    card.querySelector('.card-content').innerHTML = `
+    card.innerHTML = `
+        <div class="card-header">
+            <h3>洗衣機 ${id.toUpperCase()}</h3>
+            <span class="badge">請取衣</span>
+        </div>
         <p>洗衣完成！請盡速取走衣物。</p>
         <button class="btn btn-finish" onclick="resetMachine('${id}')">我已取件</button>
     `;
@@ -67,13 +91,8 @@ function updateToFinished(id) {
 
 function resetMachine(id) {
     localStorage.removeItem(`laundry_end_${id}`);
-    const card = document.getElementById(id);
-    card.className = 'card available';
-    card.querySelector('.badge').innerText = '空閒';
-    card.querySelector('.card-content').innerHTML = `
-        <p>目前設備空閒中。</p>
-        <button class="btn btn-primary" onclick="startMachine('${id}', 40)">掃碼啟動 (40分鐘)</button>
-    `;
+    if (intervals[id]) clearInterval(intervals[id]);
+    renderAvailable(id);
     updateCounts();
 }
 
