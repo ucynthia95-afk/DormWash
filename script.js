@@ -1,101 +1,118 @@
-const TOTAL_SECONDS = 300; // 5 分鐘
-const machines = ['m1', 'm2', 'm3'];
-let intervals = {};
+// --- 1. 資料初始化 ---
+const MACHINES_KEY = 'laundry_data';
+let machines = JSON.parse(localStorage.getItem(MACHINES_KEY)) || [
+    { id: 'Balcony A-01', status: 0, endTime: null },
+    { id: 'Balcony A-02', status: 1, endTime: Date.now() + 1200000 }, // 20分後
+    { id: 'Balcony A-03', status: 2, endTime: Date.now() - 5000 },
+    { id: 'Balcony B-01', status: 0, endTime: null },
+    { id: 'Balcony B-02', status: 3, endTime: null },
+    { id: 'Balcony B-03', status: 0, endTime: null },
+];
 
-function init() {
-    machines.forEach(id => {
-        const endTime = localStorage.getItem(`laundry_end_${id}`);
-        if (endTime) {
-            const remaining = Math.floor((parseInt(endTime) - Date.now()) / 1000);
-            if (remaining > 0) {
-                runTimer(id, parseInt(endTime));
-            } else {
-                renderFinished(id);
-            }
-        } else {
-            renderAvailable(id);
-        }
-    });
-    updateCounts();
+function saveData() {
+    localStorage.setItem(MACHINES_KEY, JSON.stringify(machines));
 }
 
-function startMachine(id) {
-    const endTime = Date.now() + (TOTAL_SECONDS * 1000);
-    localStorage.setItem(`laundry_end_${id}`, endTime);
-    runTimer(id, endTime);
-    updateCounts();
-}
-
-function runTimer(id, endTime) {
-    if (intervals[id]) clearInterval(intervals[id]);
-    const card = document.getElementById(id);
+// --- 2. 頁面切換 ---
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
     
-    const updateUI = () => {
-        const now = Date.now();
-        const left = Math.floor((endTime - now) / 1000);
+    // 更新導航列顏色
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => item.classList.replace('text-blue-600', 'text-slate-400'));
+    
+    if(tabId === 'my-laundry') renderMyLaundry();
+    renderDashboard();
+}
 
-        if (left <= 0) {
-            clearInterval(intervals[id]);
-            renderFinished(id);
-            updateCounts();
-            return;
-        }
+// --- 3. 渲染首頁 ---
+function renderDashboard() {
+    const grid = document.getElementById('machine-grid');
+    if(!grid) return;
+    grid.innerHTML = '';
+    let freeCount = 0;
 
-        const mins = Math.floor(left / 60);
-        const secs = left % 60;
-        const percent = ((TOTAL_SECONDS - left) / TOTAL_SECONDS) * 100;
+    machines.forEach(m => {
+        if(m.status === 0) freeCount++;
+        const card = document.createElement('div');
+        card.className = `bg-white p-4 rounded-xl shadow-sm border-status-${m.status} cursor-pointer hover:shadow-md transition`;
+        
+        let timeLeft = m.endTime ? Math.ceil((m.endTime - Date.now()) / 60000) : 0;
+        let statusText = ['🟢 空閒', '🔴 使用中', '🟡 洗好待取', '🔧 維修中'][m.status];
+        let statusColorClass = ['text-green-600', 'text-red-600', 'text-yellow-600', 'text-slate-500'][m.status];
 
-        card.className = 'card in-use';
         card.innerHTML = `
-            <div class="card-header">
-                <h3>洗衣機 ${id.toUpperCase()}</h3>
-                <span class="badge">使用中</span>
+            <div class="flex justify-between items-center">
+                <div>
+                    <p class="text-xs text-slate-400 font-mono">${m.id}</p>
+                    <h3 class="font-bold text-slate-800">洗衣機 ${m.id.split('-')[1]}</h3>
+                </div>
+                <i class="fas fa-washer text-2xl ${m.status === 1 ? 'working-anim text-blue-500' : 'text-slate-300'}"></i>
             </div>
-            <div class="progress-bg"><div class="progress-fill" style="width: ${percent}%"></div></div>
-            <p>剩餘時間：<strong>${mins} 分 ${secs} 秒</strong></p>
-            <button class="btn btn-danger" onclick="resetMachine('${id}')">強制重設 (Demo用)</button>
+            <div class="mt-3 flex justify-between items-end">
+                <span class="text-sm font-medium ${statusColorClass}">${statusText}</span>
+                <div class="text-right">
+                    <p class="text-xs text-slate-400">${m.status === 1 ? '預計結束' : ''}</p>
+                    <p class="text-sm font-bold text-blue-600">${m.status === 1 ? timeLeft + ' min' : '--'}</p>
+                </div>
+            </div>
         `;
-    };
-    updateUI();
-    intervals[id] = setInterval(updateUI, 1000);
+        card.onclick = () => openControl(m.id);
+        grid.appendChild(card);
+    });
+    document.getElementById('header-status').innerText = `目前空閒：${freeCount} / ${machines.length}`;
 }
 
-function renderAvailable(id) {
-    const card = document.getElementById(id);
-    card.className = 'card available';
-    card.innerHTML = `
-        <div class="card-header">
-            <h3>洗衣機 ${id.toUpperCase()}</h3>
-            <span class="badge">空閒</span>
+// --- 4. 機器操作 ---
+function openControl(id) {
+    const m = machines.find(item => item.id === id);
+    document.getElementById('control-title').innerText = `${m.id}`;
+    const actions = document.getElementById('control-actions');
+    actions.innerHTML = '';
+
+    if (m.status === 0) {
+        actions.innerHTML = `<button onclick="updateMachineStatus('${m.id}', 1)" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg">開始洗衣 (40分鐘)</button>`;
+    } else if (m.status === 2) {
+        actions.innerHTML = `<button onclick="updateMachineStatus('${m.id}', 0)" class="w-full bg-green-500 text-white py-4 rounded-xl font-bold shadow-lg">我已取走衣物</button>`;
+    }
+    actions.innerHTML += `<button onclick="updateMachineStatus('${m.id}', 3)" class="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-medium">報修按鈕</button>`;
+    
+    switchTab('control');
+}
+
+function updateMachineStatus(id, newStatus) {
+    const m = machines.find(item => item.id === id);
+    m.status = newStatus;
+    m.endTime = (newStatus === 1) ? Date.now() + (40 * 60000) : null;
+    saveData();
+    switchTab('dashboard');
+}
+
+// --- 5. 個人中心渲染 ---
+function renderMyLaundry() {
+    const container = document.getElementById('my-status-container');
+    const myItems = machines.filter(m => m.status === 1 || m.status === 2);
+    
+    if(myItems.length === 0) {
+        container.innerHTML = `<p class="text-center text-slate-400 py-10">目前沒有洗滌中的衣物</p>`;
+        return;
+    }
+    container.innerHTML = myItems.map(m => `
+        <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-xl">
+            <h3 class="text-2xl font-bold mb-2">${m.id}</h3>
+            <div class="bg-blue-500 rounded-lg p-3">
+                <p class="text-3xl font-mono">${m.status === 1 ? Math.max(0, Math.ceil((m.endTime-Date.now())/60000)) : 0} <span class="text-lg">min</span></p>
+            </div>
         </div>
-        <p>目前設備空閒中。</p>
-        <button class="btn btn-primary" onclick="startMachine('${id}')">掃碼啟動 (5分鐘)</button>
-    `;
+    `).join('');
 }
 
-function renderFinished(id) {
-    const card = document.getElementById(id);
-    card.className = 'card finished';
-    card.innerHTML = `
-        <div class="card-header">
-            <h3>洗衣機 ${id.toUpperCase()}</h3>
-            <span class="badge">請取衣</span>
-        </div>
-        <p>洗衣完成！請取走衣物以釋放機器。</p>
-        <button class="btn btn-finish" onclick="resetMachine('${id}')">我已取件</button>
-    `;
+function simulateScan() {
+    const randomIdx = Math.floor(Math.random() * machines.length);
+    openControl(machines[randomIdx].id);
 }
 
-function resetMachine(id) {
-    localStorage.removeItem(`laundry_end_${id}`);
-    if (intervals[id]) clearInterval(intervals[id]);
-    renderAvailable(id);
-    updateCounts();
-}
-
-function updateCounts() {
-    document.getElementById('count-available').innerText = document.querySelectorAll('.card.available').length;
-    document.getElementById('count-inuse').innerText = document.querySelectorAll('.card.in-use').length;
-}
-
-window.onload = init;
+// 初始化啟動
+renderDashboard();
+setInterval(renderDashboard, 30000); // 每 30 秒自動更新時間
