@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartLaundry - 智慧控制面板</title>
+    <title>SmartLaundry - 穩定持久化版本</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-50 p-4 md:p-10">
 
-    <header class="max-w-5xl mx-auto mb-12 flex justify-between items-center">
+    <header class="max-w-5xl mx-auto mb-10 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight">洗衣房監控系統</h1>
-            <p class="text-slate-400 font-medium">即時機台狀態與遠端操作</p>
+            <h1 class="text-3xl font-black text-slate-800">洗衣房控制台</h1>
+            <p class="text-slate-400 font-medium italic">狀態會自動儲存，刷新不丟失</p>
         </div>
-        <div class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-200">
+        <div class="bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-200">
             <span id="clock" class="text-xl font-mono font-bold text-blue-600">00:00:00</span>
         </div>
     </header>
 
     <main class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8" id="machine-grid">
-        </main>
+        <div class="text-center py-20 col-span-3 text-slate-300">系統載入中...</div>
+    </main>
 
     <script src="script.js"></script>
 </body>
