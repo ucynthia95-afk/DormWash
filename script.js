@@ -1,6 +1,6 @@
-const TOTAL_MINUTES = 5;
+const TOTAL_SECONDS = 300; // 5 分鐘
 const machines = ['m1', 'm2', 'm3'];
-let intervals = {}; // 儲存計時器，避免重複執行
+let intervals = {};
 
 function init() {
     machines.forEach(id => {
@@ -20,7 +20,7 @@ function init() {
 }
 
 function startMachine(id) {
-    const endTime = Date.now() + (TOTAL_MINUTES * 60 * 1000);
+    const endTime = Date.now() + (TOTAL_SECONDS * 1000);
     localStorage.setItem(`laundry_end_${id}`, endTime);
     runTimer(id, endTime);
     updateCounts();
@@ -28,18 +28,14 @@ function startMachine(id) {
 
 function runTimer(id, endTime) {
     if (intervals[id]) clearInterval(intervals[id]);
-
     const card = document.getElementById(id);
-    card.className = 'card in-use';
     
-    // 每秒更新一次介面
     const updateUI = () => {
         const now = Date.now();
         const left = Math.floor((endTime - now) / 1000);
 
         if (left <= 0) {
             clearInterval(intervals[id]);
-            localStorage.setItem(`laundry_end_${id}`, "finished"); // 標記為完成
             renderFinished(id);
             updateCounts();
             return;
@@ -47,8 +43,9 @@ function runTimer(id, endTime) {
 
         const mins = Math.floor(left / 60);
         const secs = left % 60;
-        const percent = ((TOTAL_MINUTES * 60 - left) / (TOTAL_MINUTES * 60)) * 100;
+        const percent = ((TOTAL_SECONDS - left) / TOTAL_SECONDS) * 100;
 
+        card.className = 'card in-use';
         card.innerHTML = `
             <div class="card-header">
                 <h3>洗衣機 ${id.toUpperCase()}</h3>
@@ -56,9 +53,9 @@ function runTimer(id, endTime) {
             </div>
             <div class="progress-bg"><div class="progress-fill" style="width: ${percent}%"></div></div>
             <p>剩餘時間：<strong>${mins} 分 ${secs} 秒</strong></p>
+            <button class="btn btn-danger" onclick="resetMachine('${id}')">強制重設 (Demo用)</button>
         `;
     };
-
     updateUI();
     intervals[id] = setInterval(updateUI, 1000);
 }
@@ -84,7 +81,7 @@ function renderFinished(id) {
             <h3>洗衣機 ${id.toUpperCase()}</h3>
             <span class="badge">請取衣</span>
         </div>
-        <p>洗衣完成！請盡速取走衣物。</p>
+        <p>洗衣完成！請取走衣物以釋放機器。</p>
         <button class="btn btn-finish" onclick="resetMachine('${id}')">我已取件</button>
     `;
 }
