@@ -1,34 +1,33 @@
-/* 機器運作中的震動動畫 */
+/* 運轉震動動畫 */
 @keyframes vibrate {
     0% { transform: translate(0); }
-    20% { transform: translate(-1px, 1px); }
-    40% { transform: translate(-1px, -1px); }
-    60% { transform: translate(1px, 1px); }
-    80% { transform: translate(1px, -1px); }
+    25% { transform: translate(-1.5px, 1.5px) rotate(0.5deg); }
+    50% { transform: translate(-1.5px, -1.5px) rotate(-0.5deg); }
+    75% { transform: translate(1.5px, 1.5px) rotate(0.5deg); }
     100% { transform: translate(0); }
 }
 
 .working-anim {
-    animation: vibrate 0.3s linear infinite;
+    animation: vibrate 0.2s linear infinite;
 }
 
-/* 分頁切換邏輯 */
+/* 漸變顯示頁面 */
 .tab-content {
     display: none;
-    animation: fadeIn 0.3s ease-out;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .tab-content.active {
     display: block;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* 狀態邊框顏色 */
-.border-status-0 { border-left-width: 6px; border-color: #10b981; } /* 空閒 */
-.border-status-1 { border-left-width: 6px; border-color: #ef4444; } /* 使用中 */
-.border-status-2 { border-left-width: 6px; border-color: #f59e0b; } /* 待取衣 */
-.border-status-3 { border-left-width: 6px; border-color: #94a3b8; } /* 維修 */
+/* 狀態卡片樣式 */
+.card-0 { border-top: 5px solid #10b981; } /* 空閒 - 綠 */
+.card-1 { border-top: 5px solid #ef4444; } /* 使用 - 紅 */
+.card-2 { border-top: 5px solid #f59e0b; } /* 待取 - 黃 */
+.card-3 { border-top: 5px solid #64748b; } /* 維修 - 灰 */
