@@ -1,33 +1,13 @@
-/* 運作中的震動感 */
-@keyframes vibration {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(0.5deg) translate(1px, 1px); }
-    50% { transform: rotate(-0.5deg) translate(-1px, -1px); }
-    75% { transform: rotate(0.5deg) translate(1px, -1px); }
-    100% { transform: rotate(0deg); }
-}
-
-.is-washing-card {
-    border: 3px solid #3b82f6 !important;
-    background-color: #f8faff !important;
-    animation: vibration 0.3s infinite;
-}
-
-.spin-slow {
-    animation: spin 3s linear infinite;
-}
-
-@keyframes spin {
+/* 洗衣機旋轉動畫 */
+@keyframes spin-custom {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 
-.machine-card {
-    transition: all 0.3s ease;
+.spin-slow {
+    animation: spin-custom 3s linear infinite;
 }
 
-button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    filter: grayscale(1);
-}
+/* 運作中震動特效 */
+@keyframes shake {
+    0% { transform: translate(0,0); }
