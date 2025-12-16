@@ -1,28 +1,31 @@
-/* 運作中的動態效果 */
-@keyframes pulse-blue {
-    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-    70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+/* 運作中的發光特效 */
+@keyframes glow {
+    0% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
+    50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); border-color: #3b82f6; }
+    100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
 }
 
-.working-card {
-    border-color: #3b82f6 !important;
-    animation: pulse-blue 2s infinite;
+.washing-active {
+    animation: glow 2s infinite;
 }
 
-.machine-icon-active {
-    animation: spin 3s linear infinite;
-    color: #3b82f6;
-}
-
-@keyframes spin {
+/* 洗衣機旋轉動畫 */
+@keyframes rotate {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 
-/* 按鈕過渡 */
+.spin-icon {
+    animation: rotate 3s linear infinite;
+    color: #3b82f6;
+}
+
+.machine-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 button:disabled {
-    opacity: 0.4;
+    opacity: 0.2;
     cursor: not-allowed;
     filter: grayscale(1);
 }
