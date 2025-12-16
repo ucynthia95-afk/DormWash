@@ -1,70 +1,85 @@
-/**
- * 模擬啟動機器
- * @param {string} id - 機器卡片的 ID
- */
-function startMachine(id) {
+// 初始化：從 localStorage 讀取狀態，否則設為空閒
+const machines = ['m1', 'm2', 'm3'];
+
+function init() {
+    machines.forEach(id => {
+        const endTime = localStorage.getItem(`laundry_end_${id}`);
+        if (endTime) {
+            const remaining = Math.floor((parseInt(endTime) - Date.now()) / 1000);
+            if (remaining > 0) {
+                updateToInUse(id, remaining, parseInt(endTime));
+            } else {
+                updateToFinished(id);
+            }
+        }
+    });
+    updateCounts();
+}
+
+function startMachine(id, minutes) {
+    const duration = minutes * 60; // 轉為秒
+    const endTime = Date.now() + duration * 1000;
+    
+    localStorage.setItem(`laundry_end_${id}`, endTime);
+    updateToInUse(id, duration, endTime);
+    updateCounts();
+}
+
+function updateToInUse(id, secondsLeft, endTime) {
     const card = document.getElementById(id);
-    
-    // 改變狀態
-    card.classList.remove('available');
-    card.classList.add('in-use');
-    
-    // 更新標籤內容
+    card.className = 'card in-use';
     card.querySelector('.badge').innerText = '使用中';
     
-    // 更新內部文字與按鈕
-    const statusText = card.querySelector('.status-text');
-    statusText.innerHTML = `預計剩餘：<span class="timer">40</span> 分鐘`;
-    
-    // 隱藏啟動按鈕
-    const btn = card.querySelector('.btn');
-    if (btn) btn.style.display = 'none';
+    const content = card.querySelector('.card-content');
+    content.innerHTML = `
+        <div class="progress-bg"><div id="bar-${id}" class="progress-fill"></div></div>
+        <p>剩餘時間：<span id="time-${id}">--</span> 分鐘</p>
+    `;
 
-    // 插入模擬進度條
-    const progressDiv = document.createElement('div');
-    progressDiv.className = 'progress-bg';
-    progressDiv.innerHTML = '<div class="progress-fill" style="width: 5%; transition: width 2s;"></div>';
-    card.insertBefore(progressDiv, statusText);
+    // 啟動定時器
+    const timerInterval = setInterval(() => {
+        const now = Date.now();
+        const left = Math.floor((endTime - now) / 1000);
 
-    // 模擬成功反饋
-    console.log(`Machine ${id} started.`);
-    alert("掃描成功！系統已開始計時。");
-    
-    updateGlobalCounts();
+        if (left <= 0) {
+            clearInterval(timerInterval);
+            updateToFinished(id);
+            updateCounts();
+        } else {
+            const mins = Math.ceil(left / 60);
+            document.getElementById(`time-${id}`).innerText = mins;
+            // 模擬進度條（40分鐘固定比例，這裡簡化處理）
+            const percent = Math.max(0, 100 - (left / (40 * 60)) * 100);
+            document.getElementById(`bar-${id}`).style.width = percent + '%';
+        }
+    }, 1000);
 }
 
-/**
- * 模擬重設機器（完成取件）
- */
-function resetMachine(id) {
+function updateToFinished(id) {
     const card = document.getElementById(id);
-    
-    card.classList.remove('finished', 'in-use');
-    card.classList.add('available');
-    
+    card.className = 'card finished';
+    card.querySelector('.badge').innerText = '請取衣';
+    card.querySelector('.card-content').innerHTML = `
+        <p>洗衣完成！請盡速取走衣物。</p>
+        <button class="btn btn-finish" onclick="resetMachine('${id}')">我已取件</button>
+    `;
+}
+
+function resetMachine(id) {
+    localStorage.removeItem(`laundry_end_${id}`);
+    const card = document.getElementById(id);
+    card.className = 'card available';
     card.querySelector('.badge').innerText = '空閒';
-    card.querySelector('.status-text').innerText = '目前設備空閒中，歡迎使用。';
-    
-    // 恢復按鈕
-    let btn = card.querySelector('.btn');
-    btn.className = 'btn btn-primary';
-    btn.innerText = '模擬掃碼啟動';
-    btn.setAttribute('onclick', `startMachine('${id}')`);
-    
-    alert("感謝您的配合，機器已標示為空閒。");
-    updateGlobalCounts();
+    card.querySelector('.card-content').innerHTML = `
+        <p>目前設備空閒中。</p>
+        <button class="btn btn-primary" onclick="startMachine('${id}', 40)">掃碼啟動 (40分鐘)</button>
+    `;
+    updateCounts();
 }
 
-/**
- * 更新頂部統計數字
- */
-function updateGlobalCounts() {
-    const available = document.querySelectorAll('.card.available').length;
-    const inUse = document.querySelectorAll('.card.in-use').length;
-    
-    document.getElementById('count-available').innerText = available;
-    document.getElementById('count-inuse').innerText = inUse;
+function updateCounts() {
+    document.getElementById('count-available').innerText = document.querySelectorAll('.card.available').length;
+    document.getElementById('count-inuse').innerText = document.querySelectorAll('.card.in-use').length;
 }
 
-// 初始化
-window.onload = updateGlobalCounts;
+window.onload = init;
