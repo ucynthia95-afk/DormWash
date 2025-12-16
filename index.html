@@ -3,31 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DormWash | 5分鐘 Demo 版</title>
+    <title>SmartLaundry - 智慧宿舍洗衣系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <header>
-        <h1>DormWash</h1>
-        <p>宿舍洗衣即時看板 (5分鐘測試)</p>
+<body class="bg-slate-50 font-sans pb-20">
+
+    <header class="bg-blue-600 text-white p-4 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center">
+                <i class="fas fa-wind mr-2"></i> SmartLaundry
+            </h1>
+            <span id="header-status" class="text-sm bg-blue-500 px-3 py-1 rounded-full">載入中...</span>
+        </div>
     </header>
-    <div class="container">
-        <div class="stats-bar">
-            <div class="stat-item">
-                <span class="stat-value" id="count-available">0</span>
-                <span class="stat-label">空閒中</span>
+
+    <main class="container mx-auto p-4">
+        <section id="dashboard" class="tab-content active">
+            <h2 class="text-lg font-semibold mb-4 text-slate-700">即時狀態看板 (Live Status)</h2>
+            <div id="machine-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                </div>
+        </section>
+
+        <section id="control" class="tab-content">
+            <div class="bg-white rounded-2xl shadow-md p-6 max-w-md mx-auto">
+                <div class="text-center mb-6">
+                    <div id="control-icon" class="text-6xl text-blue-500 mb-4">
+                        <i class="fas fa-charging-station"></i>
+                    </div>
+                    <h2 id="control-title" class="text-2xl font-bold text-slate-800">載入中...</h2>
+                    <p class="text-slate-500">掃描 QR Code 操作</p>
+                </div>
+                <div id="control-actions" class="space-y-4">
+                    </div>
+                <button onclick="switchTab('dashboard')" class="w-full mt-6 text-slate-400 text-sm underline">
+                    返回儀表板
+                </button>
             </div>
-            <div class="stat-item" style="border-left: 1px solid #eee;">
-                <span class="stat-value" id="count-inuse">0</span>
-                <span class="stat-label">使用中</span>
+        </section>
+
+        <section id="my-laundry" class="tab-content">
+            <h2 class="text-lg font-semibold mb-4 text-slate-700">我的洗衣進度</h2>
+            <div id="my-status-container" class="space-y-4">
+                </div>
+        </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-3 shadow-2xl">
+        <button onclick="switchTab('dashboard')" class="nav-item flex flex-col items-center text-blue-600">
+            <i class="fas fa-th-large text-xl"></i>
+            <span class="text-xs mt-1">首頁</span>
+        </button>
+        <button onclick="simulateScan()" class="flex flex-col items-center">
+            <div class="bg-blue-600 text-white p-3 rounded-full -mt-8 shadow-lg active:scale-90 transition">
+                <i class="fas fa-qrcode text-2xl"></i>
             </div>
-        </div>
-        <div class="machine-list" id="machine-list">
-            <div id="m1" class="card"></div>
-            <div id="m2" class="card"></div>
-            <div id="m3" class="card"></div>
-        </div>
-    </div>
+            <span class="text-xs mt-1 text-slate-400">掃描洗衣</span>
+        </button>
+        <button onclick="switchTab('my-laundry')" class="nav-item flex flex-col items-center text-slate-400">
+            <i class="fas fa-user text-xl"></i>
+            <span class="text-xs mt-1">我的</span>
+        </button>
+    </nav>
+
     <script src="script.js"></script>
 </body>
 </html>
