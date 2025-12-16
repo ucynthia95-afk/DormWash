@@ -1,97 +1,98 @@
-// 初始化三台機器的資料
-const STORAGE_KEY = 'laundry_v3_direct';
+// 資料庫 Key 值
+const STORAGE_KEY = 'LAUNDRY_V4_CORE';
+
+// 初始化：從瀏覽器儲存空間讀取資料，如果沒有則設定預設 3 台機器
 let machines = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
-    { id: '機台 A-01', status: 0, endTime: null },
-    { id: '機台 A-02', status: 0, endTime: null },
-    { id: '機台 A-03', status: 0, endTime: null }
+    { name: '機台 A-01', status: 'idle', endTime: null },
+    { name: '機台 A-02', status: 'idle', endTime: null },
+    { name: '機台 A-03', status: 'idle', endTime: null }
 ];
 
-function updateUI() {
-    const display = document.getElementById('machine-display');
-    display.innerHTML = '';
+function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(machines));
+}
+
+function render() {
+    const grid = document.getElementById('machine-grid');
+    grid.innerHTML = '';
 
     machines.forEach((m, index) => {
         const now = Date.now();
-        const isWashing = m.status === 1;
-        const isFinished = m.status === 2;
-        
-        // 計算倒數
-        let timeText = "00:00";
-        if (isWashing && m.endTime) {
+        const isWashing = m.status === 'washing';
+        const isFinished = m.status === 'finished';
+
+        // 邏輯檢查：如果洗滌時間已到，自動更新狀態為完成
+        if (isWashing && now >= m.endTime) {
+            m.status = 'finished';
+            save();
+        }
+
+        // 計算倒數顯示
+        let timerDisplay = "--:--";
+        if (isWashing) {
             const diff = Math.max(0, m.endTime - now);
-            const mins = Math.floor(diff / 60000);
-            const secs = Math.floor((diff % 60000) / 1000);
-            timeText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            
-            // 時間檢查：如果洗完了自動跳轉狀態
-            if (diff === 0) {
-                m.status = 2;
-                saveData();
-            }
+            const mm = Math.floor(diff / 60000);
+            const ss = Math.floor((diff % 60000) / 1000);
+            timerDisplay = `${mm.toString().padStart(2, '0')}:${ss.toString().padStart(2, '0')}`;
         }
 
         const card = document.createElement('div');
-        card.className = `bg-white rounded-[2.5rem] p-8 shadow-2xl border-4 transition-all duration-500 ${isWashing ? 'working-card' : 'border-transparent'}`;
-        
+        card.className = `machine-card bg-white rounded-[3rem] p-8 border-2 ${isWashing ? 'washing-active' : 'border-transparent shadow-xl'}`;
+
         card.innerHTML = `
             <div class="text-center">
-                <p class="text-sm font-bold tracking-widest text-slate-400 uppercase mb-2">${getStatusLabel(m.status)}</p>
-                <h2 class="text-3xl font-black text-slate-800 mb-6">${m.id}</h2>
+                <p class="text-[10px] font-black tracking-widest text-slate-300 uppercase mb-2">
+                    ${isWashing ? '● Washing Now' : (isFinished ? '● Ready to Collect' : '● Standby')}
+                </p>
+                <h2 class="text-3xl font-black text-slate-800 mb-6">${m.name}</h2>
                 
-                <div class="relative w-32 h-32 mx-auto mb-8 bg-slate-50 rounded-full flex items-center justify-center">
-                    <i class="fas fa-compact-disc text-6xl ${isWashing ? 'machine-icon-active' : 'text-slate-200'}"></i>
+                <div class="w-24 h-24 mx-auto mb-8 bg-slate-50 rounded-full flex items-center justify-center">
+                    <i class="fas fa-sync-alt text-5xl ${isWashing ? 'spin-icon' : 'text-slate-100'}"></i>
                 </div>
 
-                <div class="bg-slate-900 text-white rounded-3xl py-4 mb-8">
-                    <p class="text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">Remaining Time</p>
-                    <p class="text-4xl font-mono font-bold">${isWashing ? timeText : (isFinished ? 'FIN' : '--:--')}</p>
+                <div class="${isWashing ? 'bg-blue-600' : (isFinished ? 'bg-emerald-500' : 'bg-slate-800')} text-white rounded-3xl py-4 mb-8 transition-colors duration-500">
+                    <p class="text-[10px] uppercase opacity-50 tracking-widest font-bold">Remaining</p>
+                    <p class="text-4xl font-mono font-bold">${isWashing ? timerDisplay : (isFinished ? 'DONE' : '--:--')}</p>
                 </div>
 
-                <div class="grid grid-cols-1 gap-3">
-                    <button onclick="startLaundry(${index})" ${m.status !== 0 ? 'disabled' : ''} 
-                        class="bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition active:scale-95">
-                        <i class="fas fa-play mr-2"></i> 開始洗衣 (5分)
+                <div class="flex flex-col gap-3">
+                    <button onclick="startLaundry(${index})" ${m.status !== 'idle' ? 'disabled' : ''} 
+                        class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-100 active:scale-95 transition-all">
+                        開始洗衣 (5m)
                     </button>
                     
-                    <button onclick="takeClothes(${index})" ${m.status !== 2 ? 'disabled' : ''} 
-                        class="bg-green-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-green-200 hover:bg-green-600 transition active:scale-95">
-                        <i class="fas fa-hand-holding-heart mr-2"></i> 已取走衣物
+                    <button onclick="collectLaundry(${index})" ${m.status !== 'finished' ? 'disabled' : ''} 
+                        class="w-full bg-emerald-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-emerald-100 active:scale-95 transition-all">
+                        已取走衣物
                     </button>
                 </div>
             </div>
         `;
-        display.appendChild(card);
+        grid.appendChild(card);
     });
 }
 
-function startLaundry(index) {
-    machines[index].status = 1;
-    machines[index].endTime = Date.now() + (5 * 60 * 1000); // 5分鐘
-    saveData();
-    updateUI();
-}
+// 開始洗衣按鈕
+window.startLaundry = function(index) {
+    machines[index].status = 'washing';
+    machines[index].endTime = Date.now() + (5 * 60 * 1000); // 這裡設定 5 分鐘
+    save();
+    render();
+};
 
-function takeClothes(index) {
-    machines[index].status = 0;
+// 取走衣物按鈕
+window.collectLaundry = function(index) {
+    machines[index].status = 'idle';
     machines[index].endTime = null;
-    saveData();
-    updateUI();
-}
+    save();
+    render();
+};
 
-function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(machines));
-}
-
-function getStatusLabel(s) {
-    return ['● 準備就緒', '● 正在洗滌', '● 洗滌完成', '● 維修中'][s];
-}
-
-// 每秒更新一次畫面
+// 每一秒更新時鐘與渲染畫面
 setInterval(() => {
-    const clock = document.getElementById('clock');
-    if(clock) clock.innerText = new Date().toLocaleTimeString('en-GB');
-    updateUI();
+    document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-GB');
+    render();
 }, 1000);
 
-// 初始執行
-updateUI();
+// 頁面加載時執行第一次渲染
+render();
