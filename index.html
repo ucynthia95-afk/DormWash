@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartLaundry - 狀態持久化控制台</title>
+    <title>SmartLaundry - 智慧控制面板</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-50 p-4">
+<body class="bg-slate-50 p-4 md:p-10">
 
-    <header class="max-w-4xl mx-auto my-8 flex justify-between items-center">
-        <h1 class="text-2xl font-black text-slate-800 tracking-tight">
-            <i class="fas fa-sync-alt text-blue-500 mr-2"></i>機台即時狀態
-        </h1>
-        <div class="text-right">
-            <p id="clock" class="font-mono font-bold text-slate-500">00:00:00</p>
+    <header class="max-w-5xl mx-auto mb-12 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">洗衣房監控系統</h1>
+            <p class="text-slate-400 font-medium">即時機台狀態與遠端操作</p>
+        </div>
+        <div class="bg-white px-4 py-2 rounded-2xl shadow-sm border border-slate-200">
+            <span id="clock" class="text-xl font-mono font-bold text-blue-600">00:00:00</span>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6" id="machine-container">
+    <main class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8" id="machine-grid">
         </main>
-
-    <footer class="max-w-4xl mx-auto mt-10 text-center text-slate-400 text-xs">
-        * 數據已儲存於瀏覽器，刷新頁面狀態不會遺失
-    </footer>
 
     <script src="script.js"></script>
 </body>
