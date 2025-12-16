@@ -3,35 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DormWash | 5分鐘快速展示版</title>
+    <title>DormWash | 5分鐘 Demo 版</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<header>
-    <h1>DormWash</h1>
-    <p>實時洗衣監控 (計時 5 分鐘)</p>
-</header>
-
-<div class="container">
-    <div class="stats-bar">
-        <div class="stat-item">
-            <span class="stat-value" id="count-available">3</span>
-            <span class="stat-label">空閒中</span>
+    <header>
+        <h1>DormWash</h1>
+        <p>宿舍洗衣即時看板 (5分鐘測試)</p>
+    </header>
+    <div class="container">
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value" id="count-available">0</span>
+                <span class="stat-label">空閒中</span>
+            </div>
+            <div class="stat-item" style="border-left: 1px solid #eee;">
+                <span class="stat-value" id="count-inuse">0</span>
+                <span class="stat-label">使用中</span>
+            </div>
         </div>
-        <div class="stat-item" style="border-left: 1px solid #eee;">
-            <span class="stat-value" id="count-inuse">0</span>
-            <span class="stat-label">使用中</span>
+        <div class="machine-list" id="machine-list">
+            <div id="m1" class="card"></div>
+            <div id="m2" class="card"></div>
+            <div id="m3" class="card"></div>
         </div>
     </div>
-
-    <div class="machine-list">
-        <div id="m1" class="card available"></div>
-        <div id="m2" class="card available"></div>
-        <div id="m3" class="card available"></div>
-    </div>
-</div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
