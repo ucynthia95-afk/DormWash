@@ -11,3 +11,24 @@
 /* 運作中震動特效 */
 @keyframes shake {
     0% { transform: translate(0,0); }
+    25% { transform: translate(1px, 1px); }
+    50% { transform: translate(-1px, -1px); }
+    75% { transform: translate(1px, -1px); }
+    100% { transform: translate(0,0); }
+}
+
+.working-card {
+    border: 3px solid #3b82f6 !important;
+    background-color: #f0f7ff !important;
+    animation: shake 0.4s infinite;
+}
+
+.machine-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
