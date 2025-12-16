@@ -8,18 +8,3 @@
     animation: spin-custom 3s linear infinite;
 }
 
-.working-card {
-    border: 3px solid #3b82f6 !important;
-    background-color: #f0f7ff !important;
-    animation: shake 0.4s infinite;
-}
-
-.machine-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    filter: grayscale(1);
-}
