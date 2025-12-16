@@ -1,124 +1,97 @@
-// --- 資料初始化 ---
-const STORAGE_KEY = 'quick_test_laundry';
+// 初始化三台機器的資料
+const STORAGE_KEY = 'laundry_v3_direct';
 let machines = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
-    { id: 'A-01', status: 0, endTime: null },
-    { id: 'A-02', status: 0, endTime: null },
-    { id: 'A-03', status: 0, endTime: null }
+    { id: '機台 A-01', status: 0, endTime: null },
+    { id: '機台 A-02', status: 0, endTime: null },
+    { id: '機台 A-03', status: 0, endTime: null }
 ];
+
+function updateUI() {
+    const display = document.getElementById('machine-display');
+    display.innerHTML = '';
+
+    machines.forEach((m, index) => {
+        const now = Date.now();
+        const isWashing = m.status === 1;
+        const isFinished = m.status === 2;
+        
+        // 計算倒數
+        let timeText = "00:00";
+        if (isWashing && m.endTime) {
+            const diff = Math.max(0, m.endTime - now);
+            const mins = Math.floor(diff / 60000);
+            const secs = Math.floor((diff % 60000) / 1000);
+            timeText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            // 時間檢查：如果洗完了自動跳轉狀態
+            if (diff === 0) {
+                m.status = 2;
+                saveData();
+            }
+        }
+
+        const card = document.createElement('div');
+        card.className = `bg-white rounded-[2.5rem] p-8 shadow-2xl border-4 transition-all duration-500 ${isWashing ? 'working-card' : 'border-transparent'}`;
+        
+        card.innerHTML = `
+            <div class="text-center">
+                <p class="text-sm font-bold tracking-widest text-slate-400 uppercase mb-2">${getStatusLabel(m.status)}</p>
+                <h2 class="text-3xl font-black text-slate-800 mb-6">${m.id}</h2>
+                
+                <div class="relative w-32 h-32 mx-auto mb-8 bg-slate-50 rounded-full flex items-center justify-center">
+                    <i class="fas fa-compact-disc text-6xl ${isWashing ? 'machine-icon-active' : 'text-slate-200'}"></i>
+                </div>
+
+                <div class="bg-slate-900 text-white rounded-3xl py-4 mb-8">
+                    <p class="text-[10px] uppercase tracking-[0.2em] opacity-50 mb-1">Remaining Time</p>
+                    <p class="text-4xl font-mono font-bold">${isWashing ? timeText : (isFinished ? 'FIN' : '--:--')}</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3">
+                    <button onclick="startLaundry(${index})" ${m.status !== 0 ? 'disabled' : ''} 
+                        class="bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition active:scale-95">
+                        <i class="fas fa-play mr-2"></i> 開始洗衣 (5分)
+                    </button>
+                    
+                    <button onclick="takeClothes(${index})" ${m.status !== 2 ? 'disabled' : ''} 
+                        class="bg-green-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-green-200 hover:bg-green-600 transition active:scale-95">
+                        <i class="fas fa-hand-holding-heart mr-2"></i> 已取走衣物
+                    </button>
+                </div>
+            </div>
+        `;
+        display.appendChild(card);
+    });
+}
+
+function startLaundry(index) {
+    machines[index].status = 1;
+    machines[index].endTime = Date.now() + (5 * 60 * 1000); // 5分鐘
+    saveData();
+    updateUI();
+}
+
+function takeClothes(index) {
+    machines[index].status = 0;
+    machines[index].endTime = null;
+    saveData();
+    updateUI();
+}
 
 function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(machines));
 }
 
-// --- 渲染 UI ---
-function renderUI() {
-    const container = document.getElementById('machine-container');
-    container.innerHTML = '';
-    
-    let freeCount = 0;
-    let workingCount = 0;
-
-    machines.forEach((m, index) => {
-        if(m.status === 0) freeCount++;
-        if(m.status === 1) workingCount++;
-
-        // 計算剩餘秒數，提供更精確的倒數感受
-        const totalMsLeft = m.endTime ? Math.max(0, m.endTime - Date.now()) : 0;
-        const minsLeft = Math.floor(totalMsLeft / 60000);
-        const secsLeft = Math.floor((totalMsLeft % 60000) / 1000);
-        
-        const card = document.createElement('div');
-        card.className = `machine-card bg-white rounded-3xl p-6 shadow-xl shadow-slate-200/50 border-2 ${m.status === 1 ? 'border-blue-500' : 'border-transparent'}`;
-
-        let actionButtons = '';
-        if (m.status === 0) {
-            actionButtons = `<button onclick="startMachine(${index})" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">開始洗衣 (5m)</button>`;
-        } else if (m.status === 1) {
-            actionButtons = `<button class="w-full bg-slate-100 text-slate-400 py-3 rounded-xl font-bold cursor-not-allowed italic">清洗中...</button>`;
-        } else if (m.status === 2) {
-            actionButtons = `<button onclick="resetMachine(${index})" class="w-full bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 transition shadow-lg shadow-green-100">取走衣物</button>`;
-        } else {
-            actionButtons = `<button class="w-full bg-slate-200 text-slate-500 py-3 rounded-xl font-bold cursor-not-allowed">維修中</button>`;
-        }
-
-        card.innerHTML = `
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <div class="flex items-center text-xs font-bold mb-1">
-                        <span class="status-dot dot-${m.status}"></span>
-                        <span class="text-slate-400 uppercase tracking-tighter">${getStatusText(m.status)}</span>
-                    </div>
-                    <h2 class="text-2xl font-black text-slate-800">${m.id}</h2>
-                </div>
-                <i class="fas fa-washer text-4xl text-slate-200 ${m.status === 1 ? 'is-working' : ''}"></i>
-            </div>
-
-            <div class="mb-6 bg-slate-50 rounded-2xl p-4 text-center">
-                <p class="text-xs font-bold text-slate-400 uppercase mb-1">剩餘時間</p>
-                <p class="text-3xl font-mono font-black ${m.status === 1 ? 'text-blue-600' : 'text-slate-300'}">
-                    ${m.status === 1 ? `${minsLeft}:${secsLeft.toString().padStart(2, '0')}` : '00:00'}
-                </p>
-            </div>
-
-            <div class="space-y-2">
-                ${actionButtons}
-                <button onclick="reportRepair(${index})" class="w-full text-slate-300 text-[10px] font-bold hover:text-red-400 transition uppercase tracking-widest">
-                    ${m.status === 3 ? '故障中' : '報修按鈕'}
-                </button>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-
-    document.getElementById('stat-free').innerText = freeCount;
-    document.getElementById('stat-working').innerText = workingCount;
+function getStatusLabel(s) {
+    return ['● 準備就緒', '● 正在洗滌', '● 洗滌完成', '● 維修中'][s];
 }
 
-// --- 操作邏輯 ---
-function startMachine(index) {
-    machines[index].status = 1;
-    // 設定為 5 分鐘後的 Unix 時間戳
-    machines[index].endTime = Date.now() + (5 * 60000); 
-    saveData();
-    renderUI();
-}
+// 每秒更新一次畫面
+setInterval(() => {
+    const clock = document.getElementById('clock');
+    if(clock) clock.innerText = new Date().toLocaleTimeString('en-GB');
+    updateUI();
+}, 1000);
 
-function resetMachine(index) {
-    machines[index].status = 0;
-    machines[index].endTime = null;
-    saveData();
-    renderUI();
-}
-
-function reportRepair(index) {
-    machines[index].status = 3;
-    machines[index].endTime = null;
-    saveData();
-    renderUI();
-}
-
-function getStatusText(s) {
-    const texts = ['Available', 'Washing', 'Finished', 'Repair'];
-    return texts[s];
-}
-
-// --- 每秒鐘檢查狀態並更新時鐘 ---
-function tick() {
-    const now = new Date();
-    document.getElementById('time-display').innerText = now.toLocaleTimeString('en-GB');
-    
-    let needsReRender = false;
-    machines.forEach(m => {
-        if (m.status === 1 && Date.now() >= m.endTime) {
-            m.status = 2; // 時間到自動轉為待取衣
-            needsReRender = true;
-        }
-    });
-
-    if (needsReRender) saveData();
-    renderUI(); // 每秒渲染一次以維持倒數秒數更新
-}
-
-// 初始化
-setInterval(tick, 1000);
-tick();
+// 初始執行
+updateUI();
