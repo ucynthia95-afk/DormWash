@@ -1,111 +1,70 @@
-:root {
-    --primary: #3498db;
-    --success: #2ecc71;
-    --warning: #f1c40f;
-    --danger: #e74c3c;
-    --dark: #2c3e50;
-    --light: #f4f7f6;
+/**
+ * 模擬啟動機器
+ * @param {string} id - 機器卡片的 ID
+ */
+function startMachine(id) {
+    const card = document.getElementById(id);
+    
+    // 改變狀態
+    card.classList.remove('available');
+    card.classList.add('in-use');
+    
+    // 更新標籤內容
+    card.querySelector('.badge').innerText = '使用中';
+    
+    // 更新內部文字與按鈕
+    const statusText = card.querySelector('.status-text');
+    statusText.innerHTML = `預計剩餘：<span class="timer">40</span> 分鐘`;
+    
+    // 隱藏啟動按鈕
+    const btn = card.querySelector('.btn');
+    if (btn) btn.style.display = 'none';
+
+    // 插入模擬進度條
+    const progressDiv = document.createElement('div');
+    progressDiv.className = 'progress-bg';
+    progressDiv.innerHTML = '<div class="progress-fill" style="width: 5%; transition: width 2s;"></div>';
+    card.insertBefore(progressDiv, statusText);
+
+    // 模擬成功反饋
+    console.log(`Machine ${id} started.`);
+    alert("掃描成功！系統已開始計時。");
+    
+    updateGlobalCounts();
 }
 
-body {
-    font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
-    background-color: var(--light);
-    color: var(--dark);
-    margin: 0;
-    padding-bottom: 50px;
+/**
+ * 模擬重設機器（完成取件）
+ */
+function resetMachine(id) {
+    const card = document.getElementById(id);
+    
+    card.classList.remove('finished', 'in-use');
+    card.classList.add('available');
+    
+    card.querySelector('.badge').innerText = '空閒';
+    card.querySelector('.status-text').innerText = '目前設備空閒中，歡迎使用。';
+    
+    // 恢復按鈕
+    let btn = card.querySelector('.btn');
+    btn.className = 'btn btn-primary';
+    btn.innerText = '模擬掃碼啟動';
+    btn.setAttribute('onclick', `startMachine('${id}')`);
+    
+    alert("感謝您的配合，機器已標示為空閒。");
+    updateGlobalCounts();
 }
 
-header {
-    background: linear-gradient(135deg, #2980b9, #3498db);
-    color: white;
-    text-align: center;
-    padding: 30px 15px;
+/**
+ * 更新頂部統計數字
+ */
+function updateGlobalCounts() {
+    const available = document.querySelectorAll('.card.available').length;
+    const inUse = document.querySelectorAll('.card.in-use').length;
+    
+    document.getElementById('count-available').innerText = available;
+    document.getElementById('count-inuse').innerText = inUse;
 }
 
-.container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.stats-bar {
-    display: flex;
-    justify-content: space-between;
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    margin-top: -40px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.stat-item { text-align: center; flex: 1; }
-.stat-value { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
-.stat-label { font-size: 0.8rem; color: #7f8c8d; }
-
-.card {
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    border-left: 8px solid #ccc;
-    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.card.available { border-left-color: var(--success); }
-.card.in-use { border-left-color: var(--danger); }
-.card.finished { border-left-color: var(--warning); }
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.card-header h3 { margin: 0; font-size: 1.2rem; }
-
-.badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: white;
-}
-
-.available .badge { background-color: var(--success); }
-.in-use .badge { background-color: var(--danger); }
-.finished .badge { background-color: var(--warning); }
-
-.progress-bg {
-    background: #eee;
-    height: 8px;
-    border-radius: 4px;
-    margin: 10px 0;
-    overflow: hidden;
-}
-
-.progress-fill {
-    background: var(--primary);
-    height: 100%;
-    width: 0%;
-}
-
-.btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.btn-primary { background-color: var(--primary); color: white; }
-.btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-
-@keyframes scanEffect {
-    from { opacity: 0.5; }
-    to { opacity: 1; }
-}
+// 初始化
+window.onload = updateGlobalCounts;
