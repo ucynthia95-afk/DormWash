@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartLaundry - 智慧宿舍洗衣系統</title>
+    <title>SmartLaundry - 智慧洗衣系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -15,30 +15,35 @@
             <h1 class="text-xl font-bold flex items-center">
                 <i class="fas fa-wind mr-2"></i> SmartLaundry
             </h1>
-            <span id="header-status" class="text-sm bg-blue-500 px-3 py-1 rounded-full">載入中...</span>
+            <span id="header-status" class="text-sm bg-blue-500 px-3 py-1 rounded-full text-white font-medium">載入中...</span>
         </div>
     </header>
 
     <main class="container mx-auto p-4">
         <section id="dashboard" class="tab-content active">
-            <h2 class="text-lg font-semibold mb-4 text-slate-700">即時狀態看板 (Live Status)</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-slate-700">即時狀態看板</h2>
+                <span class="text-xs text-slate-400 font-medium">點擊卡片進行操作</span>
+            </div>
             <div id="machine-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 </div>
         </section>
 
         <section id="control" class="tab-content">
-            <div class="bg-white rounded-2xl shadow-md p-6 max-w-md mx-auto">
-                <div class="text-center mb-6">
-                    <div id="control-icon" class="text-6xl text-blue-500 mb-4">
-                        <i class="fas fa-charging-station"></i>
+            <div class="bg-white rounded-3xl shadow-xl p-8 max-w-md mx-auto mt-4 border border-slate-100">
+                <div class="text-center mb-8">
+                    <div id="control-icon-container" class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i id="control-icon" class="fas fa-washer text-4xl text-blue-500"></i>
                     </div>
-                    <h2 id="control-title" class="text-2xl font-bold text-slate-800">載入中...</h2>
-                    <p class="text-slate-500">掃描 QR Code 操作</p>
+                    <h2 id="control-title" class="text-3xl font-black text-slate-800 tracking-tight">--</h2>
+                    <p id="control-status-text" class="text-slate-500 font-medium mt-1">目前狀態：載入中</p>
                 </div>
+                
                 <div id="control-actions" class="space-y-4">
                     </div>
-                <button onclick="switchTab('dashboard')" class="w-full mt-6 text-slate-400 text-sm underline">
-                    返回儀表板
+                
+                <button onclick="switchTab('dashboard')" class="w-full mt-8 text-slate-400 text-sm font-medium hover:text-blue-500 transition">
+                    <i class="fas fa-arrow-left mr-1"></i> 返回機器列表
                 </button>
             </div>
         </section>
@@ -50,20 +55,14 @@
         </section>
     </main>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-3 shadow-2xl">
-        <button onclick="switchTab('dashboard')" class="nav-item flex flex-col items-center text-blue-600">
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-slate-200 flex justify-around p-3 shadow-2xl">
+        <button onclick="switchTab('dashboard')" class="flex flex-col items-center text-blue-600 transition">
             <i class="fas fa-th-large text-xl"></i>
-            <span class="text-xs mt-1">首頁</span>
+            <span class="text-[10px] mt-1 font-bold">所有機器</span>
         </button>
-        <button onclick="simulateScan()" class="flex flex-col items-center">
-            <div class="bg-blue-600 text-white p-3 rounded-full -mt-8 shadow-lg active:scale-90 transition">
-                <i class="fas fa-qrcode text-2xl"></i>
-            </div>
-            <span class="text-xs mt-1 text-slate-400">掃描洗衣</span>
-        </button>
-        <button onclick="switchTab('my-laundry')" class="nav-item flex flex-col items-center text-slate-400">
-            <i class="fas fa-user text-xl"></i>
-            <span class="text-xs mt-1">我的</span>
+        <button onclick="switchTab('my-laundry')" class="flex flex-col items-center text-slate-400 transition">
+            <i class="fas fa-user-clock text-xl"></i>
+            <span class="text-[10px] mt-1 font-bold">我的洗衣</span>
         </button>
     </nav>
 
