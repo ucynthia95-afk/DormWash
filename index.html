@@ -3,46 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartLaundry - 5分鐘快速測試版</title>
+    <title>SmartLaundry - 快速控制面板</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-100 font-sans p-4 md:p-8">
+<body class="bg-slate-50 p-6">
 
-    <header class="max-w-4xl mx-auto mb-8 flex justify-between items-end">
-        <div>
-            <h1 class="text-3xl font-black text-slate-800">洗衣狀態控制台</h1>
-            <p class="text-slate-500 font-medium text-sm">點擊「開始洗衣」將啟動 5 分鐘倒數</p>
-        </div>
-        <div class="text-right">
-            <span id="time-display" class="block text-xl font-mono font-bold text-blue-600">00:00:00</span>
-            <span class="text-xs text-slate-400 uppercase font-bold tracking-widest">Live Update</span>
+    <header class="max-w-5xl mx-auto mb-10 text-center">
+        <h1 class="text-4xl font-black text-slate-800 tracking-tight mb-2">機台即時控制</h1>
+        <div class="inline-flex items-center bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200">
+            <span class="relative flex h-3 w-3 mr-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+            </span>
+            <p id="clock" class="text-slate-600 font-mono font-bold text-lg">00:00:00</p>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto">
-        <div id="machine-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            </div>
-
-        <section class="mt-10 bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">系統狀態概覽</h3>
-            <div class="grid grid-cols-3 gap-4 text-center">
-                <div class="border-r border-slate-100">
-                    <p class="text-2xl font-black text-slate-700" id="stat-total">3</p>
-                    <p class="text-xs text-slate-400">總機器數</p>
-                </div>
-                <div class="border-r border-slate-100">
-                    <p class="text-2xl font-black text-green-500" id="stat-free">0</p>
-                    <p class="text-xs text-slate-400">空閒</p>
-                </div>
-                <div>
-                    <p class="text-2xl font-black text-blue-500" id="stat-working">0</p>
-                    <p class="text-xs text-slate-400">運轉中</p>
-                </div>
-            </div>
-        </section>
-    </main>
+    <main class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8" id="machine-display">
+        </main>
 
     <script src="script.js"></script>
 </body>
