@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DormWash | 宿舍洗衣即時看板</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>DormWash</h1>
+            <p>即時監控，不再跑空</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="status-summary">
+            <div class="summary-item">
+                <span class="label">空閒機器</span>
+                <span class="value" id="available-count">1</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">使用中</span>
+                <span class="value" id="in-use-count">2</span>
+            </div>
+        </section>
+
+        <div class="machine-grid">
+            <div class="machine-card in-use">
+                <div class="card-header">
+                    <h3>洗衣機 A-01</h3>
+                    <span class="badge">使用中</span>
+                </div>
+                <div class="card-body">
+                    <p class="timer">剩餘時間：12 分鐘</p>
+                    <div class="progress-container">
+                        <div class="progress-bar" style="width: 70%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="machine-card finished">
+                <div class="card-header">
+                    <h3>洗衣機 A-02</h3>
+                    <span class="badge">請取衣</span>
+                </div>
+                <div class="card-body">
+                    <p class="info">洗衣已結束，請盡速取出衣物。</p>
+                    <button class="btn btn-finish" onclick="resetMachine(this)">我已取件</button>
+                </div>
+            </div>
+
+            <div class="machine-card available">
+                <div class="card-header">
+                    <h3>洗衣機 A-03</h3>
+                    <span class="badge">可使用</span>
+                </div>
+                <div class="card-body">
+                    <p class="info">目前無人使用。</p>
+                    <button class="btn btn-start" onclick="startMachine(this)">掃描開始 (模擬)</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2024 DormWash Project - 讓宿舍生活更輕鬆</p>
+    </footer>
+
+    <script>
+        function startMachine(btn) {
+            alert("模擬掃描 QR Code 成功！機器已啟動。");
+            // 實際開發會在這裡呼叫 API 更新資料庫
+        }
+        function resetMachine(btn) {
+            alert("感謝配合！機器狀態已更新為空閒。");
+        }
+    </script>
+</body>
+</html>
